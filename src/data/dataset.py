@@ -8,11 +8,12 @@ from src.forensics.ela import calculate_ela
 from src.forensics.residuals import calculate_gaussian_residual
 
 class DocumentDataset(Dataset):
-    def __init__(self, manifest_path: str, transform=None, return_forensics: bool = False):
+    def __init__(self, manifest_path: str, transform=None, return_forensics: bool = False, return_mask: bool = False):
         with open(manifest_path, 'r') as f:
             self.manifest = json.load(f)
             
         self.return_forensics = return_forensics
+        self.return_mask = return_mask
         self.transform = transform
         if self.transform is None:
             self.transform = transforms.Compose([
@@ -38,7 +39,21 @@ class DocumentDataset(Dataset):
         # Label: 0 for REAL, 1 for TAMPERED
         label = 1 if record["label"] == "TAMPERED" else 0
         
+        mask_tensor = None
+        if self.return_mask:
+            mask_transform = transforms.Compose([
+                transforms.Resize((224, 224)),
+                transforms.ToTensor(),
+            ])
+            if label == 1 and "mask_path" in record and record["mask_path"]:
+                mask_img = Image.open(record["mask_path"]).convert("L")
+                mask_tensor = mask_transform(mask_img)
+            else:
+                mask_tensor = torch.zeros((1, 224, 224), dtype=torch.float32)
+                
         if not self.return_forensics:
+            if self.return_mask:
+                return image_tensor, mask_tensor, torch.tensor(label, dtype=torch.long)
             return image_tensor, torch.tensor(label, dtype=torch.long)
             
         # Generate Forensics on the fly
@@ -57,5 +72,8 @@ class DocumentDataset(Dataset):
         res_tensor = forensic_transform(res_img)
         
         forensics_tensor = torch.cat((ela_tensor, res_tensor), dim=0)
+        
+        if self.return_mask:
+            return image_tensor, forensics_tensor, mask_tensor, torch.tensor(label, dtype=torch.long)
         
         return image_tensor, forensics_tensor, torch.tensor(label, dtype=torch.long)

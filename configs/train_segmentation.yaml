@@ -1,0 +1,7 @@
+image_size: 224
+batch_size: 16
+optimizer: adamw
+lr: 1e-3
+weight_decay: 1e-4
+epochs: 15
+seed: 42

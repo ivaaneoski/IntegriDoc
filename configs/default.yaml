@@ -1,0 +1,8 @@
+data:
+  image_size: [224, 224]
+  jpeg_quality_ela: 90
+  output_dir: "results"
+
+forensics:
+  ela_percentile: 95
+  gaussian_sigma: 2.0

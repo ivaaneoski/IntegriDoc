@@ -1,0 +1,12 @@
+image_size: 224
+batch_size: 16
+optimizer: adamw
+lr_head: 1e-3
+lr_backbone: 1e-4
+weight_decay: 1e-4
+epochs: 1
+warmup_epochs: 1
+scheduler: cosine
+mixed_precision: true
+early_stopping_patience: 4
+seed: 42

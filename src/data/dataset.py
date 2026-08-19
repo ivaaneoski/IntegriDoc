@@ -4,12 +4,15 @@ from PIL import Image
 from torch.utils.data import Dataset
 import torchvision.transforms as transforms
 import torch
+from src.forensics.ela import calculate_ela
+from src.forensics.residuals import calculate_gaussian_residual
 
 class DocumentDataset(Dataset):
-    def __init__(self, manifest_path: str, transform=None):
+    def __init__(self, manifest_path: str, transform=None, return_forensics: bool = False):
         with open(manifest_path, 'r') as f:
             self.manifest = json.load(f)
             
+        self.return_forensics = return_forensics
         self.transform = transform
         if self.transform is None:
             self.transform = transforms.Compose([
@@ -30,9 +33,29 @@ class DocumentDataset(Dataset):
         image = Image.open(img_path).convert("RGB")
         
         if self.transform:
-            image = self.transform(image)
+            image_tensor = self.transform(image)
             
         # Label: 0 for REAL, 1 for TAMPERED
         label = 1 if record["label"] == "TAMPERED" else 0
         
-        return image, torch.tensor(label, dtype=torch.long)
+        if not self.return_forensics:
+            return image_tensor, torch.tensor(label, dtype=torch.long)
+            
+        # Generate Forensics on the fly
+        ela_res = calculate_ela(image)
+        ela_img = ela_res["ela_image"].convert("L")
+        
+        res_res = calculate_gaussian_residual(image)
+        res_img = res_res["residual_image"].convert("L")
+        
+        forensic_transform = transforms.Compose([
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+        ])
+        
+        ela_tensor = forensic_transform(ela_img)
+        res_tensor = forensic_transform(res_img)
+        
+        forensics_tensor = torch.cat((ela_tensor, res_tensor), dim=0)
+        
+        return image_tensor, forensics_tensor, torch.tensor(label, dtype=torch.long)

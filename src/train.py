@@ -12,6 +12,7 @@ from datetime import datetime
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 from src.data.dataset import DocumentDataset
 from src.models.resnet import ResNet18Binary
+from src.models.fusion import ForensicFusionNet
 from src.evaluation.metrics import calculate_metrics, plot_confusion_matrix
 
 def train(config_path: str):
@@ -21,16 +22,23 @@ def train(config_path: str):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     
+    
+    model_type = config.get("model_type", "resnet18")
+    return_forensics = (model_type == "fusion")
+    
     # 1. Setup DataLoader
-    train_dataset = DocumentDataset("data/manifests/train.json")
-    val_dataset = DocumentDataset("data/manifests/val.json")
+    train_dataset = DocumentDataset("data/manifests/train.json", return_forensics=return_forensics)
+    val_dataset = DocumentDataset("data/manifests/val.json", return_forensics=return_forensics)
     
     batch_size = config.get("batch_size", 32)
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
     
     # 2. Setup Model
-    model = ResNet18Binary(pretrained=True).to(device)
+    if model_type == "fusion":
+        model = ForensicFusionNet(use_ela=True, use_residual=True).to(device)
+    else:
+        model = ResNet18Binary(pretrained=True).to(device)
     
     # 3. Setup Loss and Optimizer
     criterion = nn.CrossEntropyLoss()
@@ -49,11 +57,20 @@ def train(config_path: str):
     for epoch in range(epochs):
         model.train()
         train_loss = 0.0
-        for images, labels in train_loader:
-            images, labels = images.to(device), labels.to(device)
+        for batch in train_loader:
+            if return_forensics:
+                images, forensics, labels = batch
+                images, forensics, labels = images.to(device), forensics.to(device), labels.to(device)
+            else:
+                images, labels = batch
+                images, labels = images.to(device), labels.to(device)
+                forensics = None
             
             optimizer.zero_grad()
-            outputs = model(images)
+            if return_forensics:
+                outputs = model(images, forensics)
+            else:
+                outputs = model(images)
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
@@ -70,9 +87,20 @@ def train(config_path: str):
         all_probs = []
         
         with torch.no_grad():
-            for images, labels in val_loader:
-                images, labels = images.to(device), labels.to(device)
-                outputs = model(images)
+            for batch in val_loader:
+                if return_forensics:
+                    images, forensics, labels = batch
+                    images, forensics, labels = images.to(device), forensics.to(device), labels.to(device)
+                else:
+                    images, labels = batch
+                    images, labels = images.to(device), labels.to(device)
+                    forensics = None
+                    
+                if return_forensics:
+                    outputs = model(images, forensics)
+                else:
+                    outputs = model(images)
+                    
                 loss = criterion(outputs, labels)
                 val_loss += loss.item() * images.size(0)
                 

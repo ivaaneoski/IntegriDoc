@@ -1,0 +1,19 @@
+experiment_name: "resnet18_doctamper_finetune"
+model:
+  type: "resnet18"
+  pretrained: true
+  freeze_backbone: false # We want to fine-tune the entire network on the new domain
+
+data:
+  train_manifest: "data/doctamper/manifest.json"
+  val_manifest: "data/doctamper/manifest.json" # Split properly in practice
+  batch_size: 16
+  num_workers: 4
+
+training:
+  epochs: 15 # Longer fine-tuning as requested
+  learning_rate: 0.00001 # Much lower learning rate for fine-tuning
+  weight_decay: 0.0001
+  save_dir: "results/runs/"
+  # Start from our previously trained synthetic baseline
+  resume_from: "results/runs/resnet18_baseline/best.pt" 

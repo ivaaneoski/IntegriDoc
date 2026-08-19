@@ -4,7 +4,7 @@ optimizer: adamw
 lr_head: 1e-3
 lr_backbone: 1e-4
 weight_decay: 1e-4
-epochs: 1
+epochs: 15
 warmup_epochs: 1
 scheduler: cosine
 mixed_precision: true

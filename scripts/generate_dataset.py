@@ -95,4 +95,4 @@ def generate_dataset(num_sources: int = 100, output_dir: str = "data/synthetic")
     print(f"Train: {len(train_manifest)} | Val: {len(val_manifest)} | Test: {len(test_manifest)}")
     
 if __name__ == "__main__":
-    generate_dataset(num_sources=100) # Small smoke dataset by default
+    generate_dataset(num_sources=2000)

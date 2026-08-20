@@ -1,0 +1,10 @@
+model_type: fusion
+batch_size: 16
+epochs: 10
+lr_head: 0.0001
+use_ela: true
+use_residual: true
+manifests:
+  train: data/manifests/train.json
+  val: data/manifests/val.json
+  test: data/manifests/test.json

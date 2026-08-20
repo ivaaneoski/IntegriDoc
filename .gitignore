@@ -51,7 +51,8 @@ logs/
 
 # Jupyter
 .ipynb_checkpoints
-*.ipynb
+!notebooks/*.ipynb
+
 
 # Pytest
 .pytest_cache/

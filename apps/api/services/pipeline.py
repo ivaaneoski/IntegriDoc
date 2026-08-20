@@ -1,6 +1,8 @@
 import os
 import io
 import base64
+import cv2
+import numpy as np
 import torch
 import torchvision.transforms as transforms
 from PIL import Image, ImageDraw
@@ -35,31 +37,37 @@ def get_model():
         return _model, _model_type
         
     weights_path = "results/runs/resnet18_baseline/best.pt"
-    
-    # Try loading Fusion model first if available
-    fusion_weights = "results/runs/fusion/best.pt"
-    if os.path.exists(fusion_weights):
-        model = ForensicFusionNet(use_ela=True, use_residual=True)
-        try:
-            model.load_state_dict(torch.load(fusion_weights, map_location=device))
+    if not os.path.exists(weights_path):
+        weights_path = "results/runs/fusion/best.pt"
+        
+    if os.path.exists(weights_path):
+        state_dict = torch.load(weights_path, map_location=device)
+        is_fusion = any("rgb_backbone" in k or "forensic_backbone" in k for k in state_dict.keys())
+        
+        if is_fusion:
+            model = ForensicFusionNet(use_ela=True, use_residual=True)
+            model.load_state_dict(state_dict)
             model.eval()
             _model = model
             _model_type = "fusion"
+            print(f"Loaded ForensicFusionNet model from {weights_path}")
             return _model, _model_type
-        except Exception:
-            pass
+        else:
+            model = ResNet18Binary(pretrained=False)
+            model.load_state_dict(state_dict)
+            model.eval()
+            _model = model
+            _model_type = "resnet"
+            print(f"Loaded ResNet18Binary model from {weights_path}")
+            return _model, _model_type
             
-    # Fallback to ResNet18
+    # Fallback default
     model = ResNet18Binary(pretrained=False)
-    if os.path.exists(weights_path):
-        try:
-            model.load_state_dict(torch.load(weights_path, map_location=device))
-        except Exception:
-            pass
     model.eval()
     _model = model
     _model_type = "resnet"
     return _model, _model_type
+
 
 def run_full_analysis(image_bytes: bytes) -> Dict[str, Any]:
     """
@@ -105,20 +113,41 @@ def run_full_analysis(image_bytes: bytes) -> Dict[str, Any]:
     
     # 3. Create Heatmap / Tamper Mask
     mask = Image.new('L', (w, h), 0)
+    regions = 0
     if is_tampered:
+        # Dynamic Heatmap using ELA variance
+        ela_cv = np.array(ela_img.convert("L"))
+        thresh_val = max(100, np.max(ela_cv) * 0.7)
+        _, thresh = cv2.threshold(ela_cv, thresh_val, 255, cv2.THRESH_BINARY)
+        contours, _ = cv2.findContours(thresh.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
         draw = ImageDraw.Draw(mask)
-        draw.rectangle([w // 4, h // 4, 3 * w // 4, h // 2], fill=255)
+        for cnt in contours:
+            cx, cy, cw, ch = cv2.boundingRect(cnt)
+            # Only count reasonably sized regions as tampered blocks
+            if cw * ch > 400 and cw < w * 0.9 and ch < h * 0.9:
+                pad = 10
+                bx = max(0, cx - pad)
+                by = max(0, cy - pad)
+                bx2 = min(w, cx + cw + pad)
+                by2 = min(h, cy + ch + pad)
+                draw.rectangle([bx, by, bx2, by2], fill=255)
+                regions += 1
+                
+        # Fallback if no contours were large enough but model predicts tamper
+        if regions == 0:
+            draw.rectangle([w // 4, h // 4, 3 * w // 4, h // 2], fill=255)
+            regions = 1
+            
         vlm_summary = (
             f"The document shows strong evidence of digital tampering (Confidence: {tamper_score*100:.1f}%). "
             f"Forensic ELA and noise variance indicate spliced text blocks and compression mismatches."
         )
-        regions = 1
     else:
         vlm_summary = (
             f"The document appears authentic (Confidence: {(1 - tamper_score)*100:.1f}%). "
             f"No statistical noise discontinuities or compression anomalies were detected."
         )
-        regions = 0
         
     buffered_mask = io.BytesIO()
     mask.save(buffered_mask, format="JPEG")

@@ -97,13 +97,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             document.getElementById('result-regions').textContent = `${result.regions_detected} Detected`;
-            document.getElementById('result-explanation').textContent = result.vlm_summary || 'No VLM output available.';
+            
+            const vlmText = result.vlm_summary || 'No VLM output available.';
+            document.getElementById('result-explanation').innerHTML = marked.parse(vlmText);
 
             // Render Artifacts (Assuming API returns base64 or static URLs)
             if (result.artifacts) {
                 if (result.artifacts.ela) document.getElementById('img-ela').src = 'data:image/jpeg;base64,' + result.artifacts.ela;
                 if (result.artifacts.residual) document.getElementById('img-res').src = 'data:image/jpeg;base64,' + result.artifacts.residual;
                 if (result.artifacts.mask) document.getElementById('img-mask').src = 'data:image/jpeg;base64,' + result.artifacts.mask;
+                if (result.artifacts.annotated) previewImage.src = 'data:image/jpeg;base64,' + result.artifacts.annotated;
             }
 
             loadingState.classList.add('hidden');

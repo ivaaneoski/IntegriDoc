@@ -3,10 +3,14 @@ import io
 import base64
 from PIL import Image
 from fastapi import FastAPI, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
+from dotenv import load_dotenv
 import uvicorn
 from pydantic import BaseModel
+
+load_dotenv()
 
 from apps.api.services.pipeline import run_full_analysis
 

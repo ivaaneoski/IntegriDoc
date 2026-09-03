@@ -39,6 +39,7 @@
     }
   </style>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
     tailwind.config = {
       important: '#app-root',
@@ -178,10 +179,10 @@
                   </div>
 
                   <div class="border border-text-light/20 p-5 flex-1">
-                    <h3 class="font-display font-medium text-sm text-text-light/70 uppercase tracking-widest mb-3">VLM Assessment</h3>
-                    <p id="result-explanation" class="font-body text-sm text-text-light/90 leading-relaxed">
-                      The document appears authentic...
-                    </p>
+                    <h3 class="text-xs uppercase tracking-widest text-gray-500 mb-2">VLM ASSESSMENT</h3>
+                    <div id="result-explanation" class="text-sm text-gray-300 leading-relaxed font-mono markdown-body">
+                        <!-- VLM summary will go here -->
+                    </div>
                   </div>
 
                   <!-- Evidence Gallery -->

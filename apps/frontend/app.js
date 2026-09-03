@@ -100,6 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const vlmText = result.vlm_summary || 'No VLM output available.';
             document.getElementById('result-explanation').innerHTML = marked.parse(vlmText);
+            document.getElementById('vlm-short-text').textContent = "Detailed inspection completed. Click expand to view the full deep dive of tampered regions.";
 
             // Render Artifacts (Assuming API returns base64 or static URLs)
             if (result.artifacts) {

@@ -202,9 +202,10 @@ def run_full_analysis(image_bytes: bytes) -> Dict[str, Any]:
                 f"and identify any signs that the document may have been digitally altered, manipulated, composited, or otherwise tampered with.\n\n"
                 f"Our neural network evaluated this image and classified it as {verdict_text} "
                 f"with a confidence score of {base_confidence*100:.1f}%. "
-                f"We have also drawn thick RED bounding boxes on the image provided to you. These RED bounding boxes indicate "
+                f"We have also drawn thick RED bounding boxes on the first image provided to you. These RED bounding boxes indicate "
                 f"the exact pixels where our Semantic Segmentation U-Net model localized physical splicing, inconsistencies, or text manipulation. "
                 f"Please read any text or elements inside these red boxes and carefully evaluate them in your assessment.\n\n"
+                f"We are also providing the Error Level Analysis (ELA) map as the second image, and the Gaussian Noise Residual map as the third image. Use these to check for compression inconsistencies and noise anomalies.\n\n"
                 f"### What to inspect\n"
                 f"Carefully examine the entire document, including:\n"
                 f"1. **Text consistency**: Font style, spacing, alignment, sharpness differences.\n"
@@ -232,8 +233,8 @@ def run_full_analysis(image_bytes: bytes) -> Dict[str, Any]:
             )
             
             response = client.models.generate_content(
-                model='gemini-3.6-flash',
-                contents=[annotated_img, prompt]
+                model='gemini-3.7-flash',
+                contents=[annotated_img, ela_img, noise_img, prompt]
             )
             vlm_summary = response.text.strip()
         except Exception as e:

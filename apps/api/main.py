@@ -42,6 +42,24 @@ def serve_ui():
     with open(index_path, "r", encoding="utf-8") as f:
         return f.read()
 
+@app.get("/documentation", response_class=HTMLResponse)
+def serve_docs_ui():
+    path = os.path.join(FRONTEND_DIR, "documentation.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read()
+
+@app.get("/support", response_class=HTMLResponse)
+def serve_support_ui():
+    path = os.path.join(FRONTEND_DIR, "support.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read()
+
+@app.get("/privacy", response_class=HTMLResponse)
+def serve_privacy_ui():
+    path = os.path.join(FRONTEND_DIR, "privacy.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read()
+
 @app.post("/v1/analyze")
 async def analyze_document(file: UploadFile = File(...)):
     """

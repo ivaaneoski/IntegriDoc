@@ -145,6 +145,15 @@ def run_full_analysis(
     """
     # 1. Safe Document Loading
     img, total_pages = load_document_image(document_bytes, page_index=page_index)
+    
+    # Cap maximum dimension to 1200px to protect against Out-Of-Memory (OOM 502) on free 512MB RAM instances
+    max_dim = 1200
+    orig_w, orig_h = img.size
+    if max(orig_w, orig_h) > max_dim:
+        scale = max_dim / float(max(orig_w, orig_h))
+        new_w, new_h = max(10, int(orig_w * scale)), max(10, int(orig_h * scale))
+        img = img.resize((new_w, new_h), Image.Resampling.BILINEAR)
+    
     w, h = img.size
     is_pdf_doc = is_pdf(document_bytes)
     
@@ -311,12 +320,20 @@ def run_full_analysis(
                 f"**Conclusion & Risk Recommendation:** Actionable recommendation for KYC/fraud analysts.\n"
             )
             
+            # Prepare lightweight thumbnails for rapid VLM transmission
+            vlm_annotated = annotated_img.copy()
+            vlm_annotated.thumbnail((800, 800))
+            vlm_ela = ela_img.copy()
+            vlm_ela.thumbnail((800, 800))
+            vlm_noise = noise_img.copy()
+            vlm_noise.thumbnail((800, 800))
+            
             # Use gemini-2.5-flash or gemini-1.5-flash with graceful fallback
-            for vlm_model_name in ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-3.7-flash"]:
+            for vlm_model_name in ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"]:
                 try:
                     response = client.models.generate_content(
                         model=vlm_model_name,
-                        contents=[annotated_img, ela_img, noise_img, prompt]
+                        contents=[vlm_annotated, vlm_ela, vlm_noise, prompt]
                     )
                     if response and response.text:
                         vlm_summary = response.text.strip()

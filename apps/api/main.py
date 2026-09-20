@@ -7,11 +7,14 @@ from fastapi import FastAPI, UploadFile, File, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
-from dotenv import load_dotenv
 import uvicorn
 from pydantic import BaseModel, Field
 
-load_dotenv()
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 from apps.api.services.pipeline import (
     run_full_analysis,

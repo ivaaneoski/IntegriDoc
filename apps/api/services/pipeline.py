@@ -146,8 +146,8 @@ def run_full_analysis(
     # 1. Safe Document Loading
     img, total_pages = load_document_image(document_bytes, page_index=page_index)
     
-    # Cap maximum dimension to 1200px to protect against Out-Of-Memory (OOM 502) on free 512MB RAM instances
-    max_dim = 1200
+    # Cap maximum dimension to 1000px to protect against Out-Of-Memory (OOM 502) on free 512MB RAM instances
+    max_dim = 1000
     orig_w, orig_h = img.size
     if max(orig_w, orig_h) > max_dim:
         scale = max_dim / float(max(orig_w, orig_h))
@@ -328,19 +328,17 @@ def run_full_analysis(
             vlm_noise = noise_img.copy()
             vlm_noise.thumbnail((800, 800))
             
-            # Use gemini-2.5-flash or gemini-1.5-flash with graceful fallback
-            for vlm_model_name in ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"]:
-                try:
-                    response = client.models.generate_content(
-                        model=vlm_model_name,
-                        contents=[vlm_annotated, vlm_ela, vlm_noise, prompt]
-                    )
-                    if response and response.text:
-                        vlm_summary = response.text.strip()
-                        break
-                except Exception as model_err:
-                    print(f"VLM {vlm_model_name} failed: {model_err}")
-                    continue
+            # Fast single-attempt VLM invocation
+            try:
+                response = client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=[vlm_annotated, vlm_ela, vlm_noise, prompt]
+                )
+                if response and response.text:
+                    vlm_summary = response.text.strip()
+            except Exception as model_err:
+                print(f"VLM call failed, falling back gracefully: {model_err}")
+                vlm_summary = None
                     
         except Exception as e:
             print(f"Gemini VLM API invocation failed: {e}")

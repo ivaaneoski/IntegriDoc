@@ -4,7 +4,7 @@ from typing import List, Dict, Any, Union
 
 def extract_text_regions(image_input: Union[str, Image.Image]) -> List[Dict[str, Any]]:
     """
-    Extracts text regions from an image using pytesseract.
+    Extracts text regions from an image using pytesseract with lightweight resolution scaling.
     Accepts either an image path (str) or a PIL Image instance.
     Returns a list of dictionaries containing text, bounding box (normalized [x1, y1, x2, y2]), and confidence.
     """
@@ -16,12 +16,22 @@ def extract_text_regions(image_input: Union[str, Image.Image]) -> List[Dict[str,
         else:
             return []
             
-        width, height = img.size
-        if width <= 0 or height <= 0:
+        w_orig, h_orig = img.size
+        if w_orig <= 0 or h_orig <= 0:
             return []
         
+        # Scale down for fast OCR processing (<0.4s) on cloud CPU
+        ocr_max = 800
+        if max(w_orig, h_orig) > ocr_max:
+            scale = ocr_max / float(max(w_orig, h_orig))
+            ocr_w, ocr_h = max(10, int(w_orig * scale)), max(10, int(h_orig * scale))
+            ocr_img = img.resize((ocr_w, ocr_h), Image.Resampling.BILINEAR)
+        else:
+            ocr_img = img
+            ocr_w, ocr_h = w_orig, h_orig
+        
         # Run Tesseract OCR and get detailed data
-        data = pytesseract.image_to_data(img, output_type=pytesseract.Output.DICT)
+        data = pytesseract.image_to_data(ocr_img, output_type=pytesseract.Output.DICT)
         
         regions = []
         n_boxes = len(data.get('level', []))
@@ -40,12 +50,12 @@ def extract_text_regions(image_input: Union[str, Image.Image]) -> List[Dict[str,
                 w = max(1, data['width'][i])
                 h = max(1, data['height'][i])
                 
-                # Normalize coordinates to 0.0 - 1.0 range [x1, y1, x2, y2]
+                # Normalize coordinates to 0.0 - 1.0 range [x1, y1, x2, y2] relative to ocr_img
                 norm_bbox = [
-                    round(x / width, 4), 
-                    round(y / height, 4), 
-                    round(min(width, x + w) / width, 4), 
-                    round(min(height, y + h) / height, 4)
+                    round(x / ocr_w, 4), 
+                    round(y / ocr_h, 4), 
+                    round(min(ocr_w, x + w) / ocr_w, 4), 
+                    round(min(ocr_h, y + h) / ocr_h, 4)
                 ]
                 
                 regions.append({
@@ -56,7 +66,7 @@ def extract_text_regions(image_input: Union[str, Image.Image]) -> List[Dict[str,
                 
         return regions
     except Exception as e:
-        # Gracefully handle when tesseract-ocr binary is not installed on system
+        # Gracefully handle when tesseract-ocr binary is absent or fails
         return []
 
 def match_tamper_regions_with_text(

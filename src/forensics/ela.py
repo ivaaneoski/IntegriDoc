@@ -17,6 +17,8 @@ def calculate_ela(image: Image.Image, quality: int = 90, percentile: float = 95.
         - ela_image: PIL Image of the ELA heatmap
         - ela_array: Normalized numpy array
         - max_diff: Maximum difference value
+        - norm_val: Value at given percentile
+        - score: Mean normalized error scalar (0.0 - 1.0)
     """
     if image.mode != 'RGB':
         image = image.convert('RGB')
@@ -37,23 +39,27 @@ def calculate_ela(image: Image.Image, quality: int = 90, percentile: float = 95.
         max_diff = 1
         
     # Calculate scale dynamically based on percentile
-    diff_arr = np.array(diff)
-    norm_val = np.percentile(diff_arr, percentile)
+    diff_arr = np.array(diff, dtype=np.float32)
+    norm_val = float(np.percentile(diff_arr, percentile))
     if norm_val == 0:
-        norm_val = max_diff
+        norm_val = float(max_diff)
     
-    scale = 255.0 / norm_val
+    scale = 255.0 / max(1.0, norm_val)
     
     # Enhance difference to make it visible
     ela_image = ImageEnhance.Brightness(diff).enhance(scale)
     
     # Convert to grayscale for consistent array output
     ela_gray = ela_image.convert('L')
-    ela_array = np.array(ela_gray) / 255.0
+    ela_array = np.array(ela_gray, dtype=np.float32) / 255.0
+    
+    # Mean error score (higher = higher compression variance/discontinuity)
+    score = float(np.mean(ela_array))
     
     return {
         "ela_image": ela_image,
         "ela_array": ela_array,
-        "max_diff": max_diff,
-        "norm_val": norm_val
+        "max_diff": int(max_diff),
+        "norm_val": float(norm_val),
+        "score": round(score, 4)
     }

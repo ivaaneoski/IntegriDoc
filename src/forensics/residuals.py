@@ -22,7 +22,6 @@ def calculate_gaussian_residual(image: Image.Image, sigma: float = 2.0) -> dict:
     magnitude = np.abs(residual)
     
     # Normalize to 0-255 for visualization
-    # Use max normalization per channel
     max_val = np.max(magnitude)
     if max_val == 0:
         max_val = 1.0
@@ -30,13 +29,15 @@ def calculate_gaussian_residual(image: Image.Image, sigma: float = 2.0) -> dict:
     normalized = (magnitude / max_val) * 255.0
     res_image = Image.fromarray(normalized.astype(np.uint8))
     
-    # Compute mean anomaly scalar (e.g. mean of magnitude)
+    # Compute mean anomaly scalar and variance
     score = float(np.mean(magnitude))
+    variance = float(np.var(magnitude))
     
     return {
         "residual_image": res_image,
         "residual_array": magnitude,
-        "score": score
+        "score": round(score, 4),
+        "variance": round(variance, 4)
     }
 
 def calculate_laplacian_residual(image: Image.Image) -> dict:
@@ -46,7 +47,7 @@ def calculate_laplacian_residual(image: Image.Image) -> dict:
     if image.mode != 'RGB':
         image = image.convert('RGB')
         
-    # Convert to grayscale for laplacian to keep it simple, or do per channel
+    # Convert to grayscale for laplacian to keep it simple
     gray = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY)
     
     # Apply Laplacian
@@ -62,9 +63,11 @@ def calculate_laplacian_residual(image: Image.Image) -> dict:
     res_image = Image.fromarray(normalized.astype(np.uint8), mode='L')
     
     score = float(np.mean(magnitude))
+    variance = float(np.var(magnitude))
     
     return {
         "residual_image": res_image,
         "residual_array": magnitude,
-        "score": score
+        "score": round(score, 4),
+        "variance": round(variance, 4)
     }

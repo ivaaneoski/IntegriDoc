@@ -3,21 +3,41 @@
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>IntegriDoc | Intelligent Forensics</title>
+  <title>IntegriDoc | Intelligent Document Forensics</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   
   <style>
-    /* Global Animations */
     .fade-in-up {
       opacity: 0;
       transform: translateY(20px);
-      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
     }
     .fade-in-up.visible {
       opacity: 1;
       transform: translateY(0);
+    }
+    .markdown-body h1, .markdown-body h2, .markdown-body h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      color: #FBF9EF;
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+    .markdown-body ul {
+      list-style-type: disc;
+      padding-left: 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+    .markdown-body li {
+      margin-bottom: 0.25rem;
+    }
+    .markdown-body strong {
+      color: #5BFB7A;
+    }
+    .markdown-body p {
+      margin-bottom: 0.75rem;
     }
   </style>
   <style type="text/tailwindcss">
@@ -50,6 +70,8 @@
             'brand-surface': '#EEECE3',
             'brand-dark': '#171412',
             'brand-accent': '#5BFB7A',
+            'brand-amber': '#F59E0B',
+            'brand-red': '#EF4444',
             'brand-blue': '#3255FF',
             'text-primary': '#171412',
             'text-secondary': '#4F4F4F',
@@ -60,6 +82,7 @@
           fontFamily: {
             'display': ['Space Grotesk', 'sans-serif'],
             'body': ['Inter', 'sans-serif'],
+            'mono': ['JetBrains Mono', 'monospace'],
           },
           boxShadow: {
             'brutal': '4px 4px 0px 0px rgba(23,20,18,1)',
@@ -81,11 +104,12 @@
           <div class="px-6 py-3 flex justify-between w-full items-center">
             <a href="/" class="font-display font-semibold text-lg flex items-center gap-2 text-brand-blue">
               <span>INTEGRIDOC®</span>
+              <span id="status-badge" class="text-xs bg-brand-accent text-brand-dark px-2 py-0.5 font-mono uppercase font-bold">SYSTEM ONLINE</span>
             </a>
           </div>
         </div>
         
-        <!-- Links & CTA -->
+        <!-- Links -->
         <div class="flex items-stretch w-full md:w-1/2 divide-x divide-border-light border-l-0 md:border-l border-border-light overflow-x-auto hide-scrollbar">
           <a href="#" class="px-6 py-3 flex-1 flex items-center justify-center text-center font-display text-sm hover:bg-brand-surface transition-colors group relative whitespace-nowrap">
             <span>Workstation</span>
@@ -101,105 +125,160 @@
 
     <!-- Main Content -->
     <main class="flex-grow flex flex-col items-center w-full">
-      <section class="w-full max-w-[1440px] px-6 md:px-12 py-16 flex flex-col gap-12">
+      <section class="w-full max-w-[1440px] px-6 md:px-12 py-12 flex flex-col gap-10">
         
         <!-- Header -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 pb-12 border-b border-border-light fade-in-up visible">
-          <h1 class="font-display text-5xl md:text-7xl font-medium tracking-tight max-w-2xl text-balance leading-none">
-            Intelligent Document Forensics.
-          </h1>
-          <p class="font-body text-text-secondary max-w-md text-lg">
-            Deploy deep residual networks and vision-language models to autonomously verify document integrity in real-time.
-          </p>
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 pb-10 border-b border-border-light fade-in-up visible">
+          <div>
+            <h1 class="font-display text-4xl md:text-6xl font-medium tracking-tight max-w-2xl text-balance leading-none mb-3">
+              Document Forgery Forensics
+            </h1>
+            <p class="font-body text-text-secondary max-w-xl text-base md:text-lg">
+              Multi-modal tamper localization using Error Level Analysis, Gaussian Noise Residuals, U-Net Segmentation, and Vision-Language grounding.
+            </p>
+          </div>
+          <div class="flex items-center gap-3 text-xs font-mono bg-brand-surface px-4 py-2 border border-border-light">
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-brand-accent animate-ping"></span>
+            <span id="telemetry-device">ENGINE: ACTIVE</span>
+          </div>
         </div>
 
         <!-- Workspace Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 relative fade-in-up visible">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 relative fade-in-up visible">
           
           <!-- Left: Upload Zone -->
-          <div class="flex flex-col gap-6 lg:sticky lg:top-8 h-fit">
-            <div class="border border-border-light bg-brand-surface p-2 transition-transform hover:-translate-y-1">
-              <div id="drop-zone" class="border border-dashed border-brand-dark/30 w-full h-[500px] flex flex-col items-center justify-center cursor-pointer hover:border-brand-blue hover:bg-brand-bg transition-colors relative overflow-hidden bg-brand-surface">
-                <span id="drop-text" class="font-display font-medium text-lg text-text-secondary">Drag & Drop Image Here</span>
+          <div class="flex flex-col gap-5 lg:sticky lg:top-8 h-fit">
+            <div class="border border-border-light bg-brand-surface p-2 transition-transform hover:-translate-y-0.5 shadow-sm">
+              <div id="drop-zone" class="border border-dashed border-brand-dark/30 w-full h-[460px] flex flex-col items-center justify-center cursor-pointer hover:border-brand-blue hover:bg-brand-bg transition-colors relative overflow-hidden bg-brand-surface group">
+                <div id="drop-content" class="flex flex-col items-center gap-3 p-6 text-center">
+                  <div class="w-14 h-14 rounded-full bg-brand-bg flex items-center justify-center border border-border-light group-hover:scale-110 transition-transform">
+                    <svg class="w-7 h-7 text-brand-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <span id="drop-text" class="font-display font-medium text-lg text-text-primary">Drag & Drop Image or PDF Document</span>
+                  <span class="text-xs text-text-secondary font-mono">Accepts PNG, JPG, WEBP, TIFF, PDF (Up to 50MB)</span>
+                </div>
                 <img id="preview-image" class="hidden absolute inset-0 w-full h-full object-contain bg-brand-dark/5" />
-                <input type="file" id="file-input" class="hidden" accept="image/*" />
+                <input type="file" id="file-input" class="hidden" accept="image/*,.pdf,application/pdf" />
               </div>
             </div>
             
-            <button id="analyze-btn" class="w-full bg-brand-dark text-text-light px-8 py-5 font-display font-medium text-xl hover:bg-brand-blue transition-colors flex items-center justify-center gap-3">
-              Initialize Pipeline <span class="text-brand-accent">→</span>
-            </button>
+            <div class="flex gap-3">
+              <button id="analyze-btn" class="flex-1 bg-brand-dark text-text-light px-8 py-4 font-display font-medium text-lg hover:bg-brand-blue transition-colors flex items-center justify-center gap-3 shadow-brutal">
+                <span>Execute Forensic Audit</span>
+                <span class="text-brand-accent">→</span>
+              </button>
+              <button id="reset-btn" class="hidden px-5 py-4 font-display text-sm border border-brand-dark bg-brand-surface hover:bg-white transition-colors">
+                Clear
+              </button>
+            </div>
           </div>
 
           <!-- Right: Investigation Report -->
           <div class="flex flex-col">
-            <div class="border border-brand-dark bg-brand-dark text-text-light p-8 min-h-[580px] flex flex-col shadow-brutal relative overflow-hidden">
-              <!-- Decorative grid -->
-              <div class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none"></div>
+            <div class="border border-brand-dark bg-brand-dark text-text-light p-7 min-h-[540px] flex flex-col shadow-brutal relative overflow-hidden">
+              <div class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none"></div>
               
               <div class="relative z-10 flex flex-col h-full">
-                <div class="flex justify-between items-center mb-8 border-b border-text-light/20 pb-4">
-                  <h2 class="font-display text-2xl font-medium tracking-tight">Analysis Report</h2>
+                <div class="flex justify-between items-center mb-6 border-b border-text-light/20 pb-3">
+                  <h2 class="font-display text-xl font-medium tracking-tight flex items-center gap-2">
+                    <span>FORENSIC TELEMETRY</span>
+                  </h2>
+                  <span id="report-doc-info" class="font-mono text-xs text-text-light/60">STANDBY</span>
                 </div>
 
                 <!-- Empty State -->
-                <div id="empty-state" class="flex-1 flex items-center justify-center text-text-light/50 font-display text-xl">
-                  Awaiting image input...
+                <div id="empty-state" class="flex-1 flex flex-col items-center justify-center text-text-light/40 font-display text-base gap-2">
+                  <svg class="w-10 h-10 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                  <span>Awaiting document upload for analysis...</span>
                 </div>
 
                 <!-- Loading State -->
-                <div id="loading-state" class="hidden flex-1 flex flex-col items-center justify-center text-brand-accent font-display text-xl animate-pulse">
-                  <div class="w-12 h-12 border-4 border-brand-accent border-t-transparent rounded-full animate-spin mb-4"></div>
-                  Extracting Artifacts...
+                <div id="loading-state" class="hidden flex-1 flex flex-col items-center justify-center text-brand-accent font-display text-lg gap-4">
+                  <div class="w-10 h-10 border-3 border-brand-accent border-t-transparent rounded-full animate-spin"></div>
+                  <div class="text-center font-mono text-sm text-text-light/80">
+                    <p class="font-display text-base text-brand-accent">Decomposing Forensic Layers...</p>
+                    <p class="text-xs text-text-light/50 mt-1">Calculating ELA, Noise Residuals & Neural Activations</p>
+                  </div>
                 </div>
 
                 <!-- Results State -->
-                <div id="results-state" class="hidden flex-1 flex-col gap-6">
+                <div id="results-state" class="hidden flex-1 flex flex-col gap-5">
                   
-                  <div class="flex items-center justify-between bg-text-light/5 border border-text-light/20 p-6 backdrop-blur-sm">
-                    <span class="font-display font-medium text-text-light/70 uppercase text-sm tracking-widest">System Verdict</span>
-                    <span id="result-verdict" class="text-3xl font-display font-bold text-brand-accent">REAL</span>
-                  </div>
-
-                  <div class="grid grid-cols-2 gap-4">
-                    <div class="border border-text-light/20 p-5 flex flex-col justify-between">
-                      <span class="font-display text-text-light/50 uppercase text-xs tracking-widest mb-2">Confidence Score</span>
-                      <span id="result-score" class="text-4xl font-display font-medium text-brand-blue">0.99</span>
+                  <!-- Verdict Card -->
+                  <div class="flex items-center justify-between bg-text-light/5 border border-text-light/20 p-5 backdrop-blur-sm">
+                    <div>
+                      <span class="font-display font-medium text-text-light/60 uppercase text-xs tracking-widest block mb-1">System Verdict</span>
+                      <span id="result-verdict" class="text-3xl font-display font-bold text-brand-accent">AUTHENTIC</span>
                     </div>
-                    <div class="border border-text-light/20 p-5 flex flex-col justify-between">
-                      <span class="font-display text-text-light/50 uppercase text-xs tracking-widest mb-2">Anomalies</span>
-                      <span id="result-regions" class="text-4xl font-display font-medium">0</span>
+                    <div class="text-right">
+                      <span class="font-display font-medium text-text-light/60 uppercase text-xs tracking-widest block mb-1">Risk Score</span>
+                      <span id="result-score" class="text-3xl font-mono font-medium text-brand-blue">0.05</span>
                     </div>
                   </div>
 
-                  <div class="border border-text-light/20 p-5 flex-1 flex flex-col">
-                    <h3 class="text-xs uppercase tracking-widest text-gray-500 mb-2 flex justify-between items-center cursor-pointer" onclick="toggleVLMDetails()">
-                      <span>VLM ASSESSMENT</span>
-                      <span id="vlm-toggle-icon" class="text-brand-accent">▼ Expand Details</span>
-                    </h3>
-                    <div id="result-summary-short" class="text-sm text-gray-300 leading-relaxed font-mono mb-2">
-                      <p id="vlm-short-text">Awaiting assessment generation...</p>
+                  <!-- Forensic Metrics Quad -->
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="border border-text-light/20 p-3 bg-black/20">
+                      <span class="font-mono text-text-light/50 uppercase text-[10px] block">Confidence</span>
+                      <span id="result-confidence" class="text-xl font-mono text-text-light font-medium">95.0%</span>
                     </div>
-                    <div id="result-explanation" class="hidden text-sm text-gray-300 leading-relaxed font-mono markdown-body border-t border-text-light/20 pt-4 mt-2">
-                        <!-- VLM summary will go here -->
+                    <div class="border border-text-light/20 p-3 bg-black/20">
+                      <span class="font-mono text-text-light/50 uppercase text-[10px] block">Anomalies</span>
+                      <span id="result-regions" class="text-xl font-mono text-text-light font-medium">0</span>
+                    </div>
+                    <div class="border border-text-light/20 p-3 bg-black/20">
+                      <span class="font-mono text-text-light/50 uppercase text-[10px] block">ELA Max Delta</span>
+                      <span id="result-ela-delta" class="text-xl font-mono text-text-light font-medium">--</span>
+                    </div>
+                    <div class="border border-text-light/20 p-3 bg-black/20">
+                      <span class="font-mono text-text-light/50 uppercase text-[10px] block">Noise Var</span>
+                      <span id="result-noise-var" class="text-xl font-mono text-text-light font-medium">--</span>
                     </div>
                   </div>
 
-                  <!-- Evidence Gallery -->
-                  <div class="grid grid-cols-3 gap-4 mt-2">
-                    <div class="border border-text-light/20 aspect-square p-1 relative group cursor-pointer bg-black">
-                      <img id="img-ela" src="" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity mix-blend-screen">
-                      <span class="absolute top-2 left-2 text-[10px] font-display font-medium bg-brand-dark/80 text-brand-accent px-1">ELA</span>
+                  <!-- Flagged Text Banner (If Spliced Text detected) -->
+                  <div id="flagged-text-container" class="hidden border border-brand-amber/50 bg-brand-amber/10 p-3 text-xs font-mono">
+                    <span class="text-brand-amber font-bold block mb-1">FLAGGED SPLICED TEXT ELEMENTS:</span>
+                    <div id="flagged-text-list" class="text-text-light/90 flex flex-wrap gap-1.5"></div>
+                  </div>
+
+                  <!-- VLM Report Section -->
+                  <div class="border border-text-light/20 p-4 bg-black/30 flex-1 flex flex-col">
+                    <div class="flex justify-between items-center cursor-pointer mb-2" onclick="toggleVLMDetails()">
+                      <span class="text-xs uppercase tracking-widest text-text-light/70 font-mono">MULTIMODAL FORENSIC REPORT</span>
+                      <span id="vlm-toggle-icon" class="text-brand-accent text-xs font-mono font-medium">▼ View Full Report</span>
                     </div>
-                    <div class="border border-text-light/20 aspect-square p-1 relative group cursor-pointer bg-black">
-                      <img id="img-res" src="" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity mix-blend-screen">
-                      <span class="absolute top-2 left-2 text-[10px] font-display font-medium bg-brand-dark/80 text-brand-accent px-1">NOISE</span>
+                    <div id="result-summary-short" class="text-xs text-text-light/80 font-mono leading-relaxed">
+                      <p id="vlm-short-text">Detailed audit completed.</p>
                     </div>
-                    <div class="border border-text-light/20 aspect-square p-1 relative group cursor-pointer bg-black">
-                      <img id="img-mask" src="" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity mix-blend-screen">
-                      <span class="absolute top-2 left-2 text-[10px] font-display font-medium bg-brand-dark/80 text-brand-accent px-1">MASK</span>
+                    <div id="result-explanation" class="hidden text-xs text-text-light/90 leading-relaxed font-mono markdown-body border-t border-text-light/20 pt-3 mt-3 max-h-[220px] overflow-y-auto">
                     </div>
                   </div>
+
+                  <!-- Evidence Artifact Gallery -->
+                  <div class="grid grid-cols-4 gap-3 pt-1">
+                    <div class="border border-text-light/20 aspect-square p-1 relative group cursor-pointer bg-black" title="Error Level Analysis">
+                      <img id="img-ela" src="" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
+                      <span class="absolute top-1 left-1 text-[9px] font-mono bg-brand-dark/90 text-brand-accent px-1">ELA</span>
+                    </div>
+                    <div class="border border-text-light/20 aspect-square p-1 relative group cursor-pointer bg-black" title="Gaussian Noise Residual">
+                      <img id="img-res" src="" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
+                      <span class="absolute top-1 left-1 text-[9px] font-mono bg-brand-dark/90 text-brand-accent px-1">NOISE</span>
+                    </div>
+                    <div class="border border-text-light/20 aspect-square p-1 relative group cursor-pointer bg-black" title="Tamper Localization Mask">
+                      <img id="img-mask" src="" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
+                      <span class="absolute top-1 left-1 text-[9px] font-mono bg-brand-dark/90 text-brand-accent px-1">MASK</span>
+                    </div>
+                    <div class="border border-text-light/20 aspect-square p-1 relative group cursor-pointer bg-black" title="Overlay & Splicing Bounding Boxes">
+                      <img id="img-annotated" src="" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
+                      <span class="absolute top-1 left-1 text-[9px] font-mono bg-brand-dark/90 text-brand-accent px-1">OVERLAY</span>
+                    </div>
+                  </div>
+
                 </div>
 
               </div>
@@ -211,15 +290,15 @@
     </main>
 
     <!-- Footer -->
-    <footer class="w-full border-t border-border-light bg-brand-bg pt-12 pb-8 mt-auto">
-      <div class="max-w-[1440px] mx-auto px-6 md:px-12 flex justify-between items-center font-display text-sm">
+    <footer class="w-full border-t border-border-light bg-brand-bg pt-8 pb-8 mt-auto">
+      <div class="max-w-[1440px] mx-auto px-6 md:px-12 flex flex-col sm:flex-row justify-between items-center gap-4 font-display text-sm">
         <div class="flex items-center gap-4 text-text-primary">
-          <span>© 2026 IntegriDoc Systems.</span>
+          <span>© 2026 IntegriDoc Systems. Forensic Research Prototype.</span>
         </div>
-        <div class="flex gap-8 text-text-secondary">
-          <a href="/docs" class="hover:text-brand-blue transition-colors cursor-pointer">API Docs</a>
-          <a href="/support" class="hover:text-brand-blue transition-colors cursor-pointer">Support</a>
-          <a href="/privacy" class="hover:text-brand-blue transition-colors cursor-pointer">Privacy Policy</a>
+        <div class="flex gap-6 text-text-secondary font-mono text-xs">
+          <a href="/docs" class="hover:text-brand-blue transition-colors">API Docs</a>
+          <a href="/support" class="hover:text-brand-blue transition-colors">Support</a>
+          <a href="/privacy" class="hover:text-brand-blue transition-colors">Privacy Policy</a>
         </div>
       </div>
     </footer>
@@ -228,36 +307,15 @@
 
   <script src="/static/app.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // Small script to update the verdict color dynamically based on text
-      const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (mutation.type === 'childList' && mutation.target.id === 'result-verdict') {
-            const text = mutation.target.textContent.trim().toUpperCase();
-            if (text === 'REAL' || text === 'AUTHENTIC') {
-              mutation.target.className = 'text-3xl font-display font-bold text-brand-accent';
-            } else {
-              mutation.target.className = 'text-3xl font-display font-bold text-red-500';
-            }
-          }
-        });
-      });
-      
-      const verdictNode = document.getElementById('result-verdict');
-      if(verdictNode) {
-        observer.observe(verdictNode, { childList: true });
-      }
-    });
-
     function toggleVLMDetails() {
       const exp = document.getElementById('result-explanation');
       const icon = document.getElementById('vlm-toggle-icon');
       if (exp.classList.contains('hidden')) {
         exp.classList.remove('hidden');
-        icon.textContent = '▲ Collapse Details';
+        icon.textContent = '▲ Collapse Report';
       } else {
         exp.classList.add('hidden');
-        icon.textContent = '▼ Expand Details';
+        icon.textContent = '▼ View Full Report';
       }
     }
   </script>
